@@ -44,7 +44,7 @@ module HashProxy
     def persistence_restructure_fiber
       Fiber.new do |tick|
         while true
-          until tick > 5 && not_restructuring?
+          until tick > 60 && not_restructuring?
             tick += Fiber.yield
           end
           @file.fsync
