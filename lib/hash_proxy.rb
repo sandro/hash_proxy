@@ -4,7 +4,7 @@ module HashProxy
   require 'zmq'
   require 'consistent_hashr'
   require 'fiber'
-  require 'stringio'
+  require 'socket'
 
   autoload 'Client', 'hash_proxy/client'
   autoload 'Node', 'hash_proxy/node'
