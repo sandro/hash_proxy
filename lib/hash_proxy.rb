@@ -5,9 +5,11 @@ module HashProxy
   require 'zmq'
   require 'consistent_hashr'
   require 'fiber'
+  require 'stringio'
 
   autoload 'Client', 'hash_proxy/client'
   autoload 'Proxy', 'hash_proxy/proxy'
   autoload 'Node', 'hash_proxy/node'
   autoload 'Server', 'hash_proxy/server'
+  autoload 'RestructurePersistence', 'hash_proxy/restructure_persistence'
 end

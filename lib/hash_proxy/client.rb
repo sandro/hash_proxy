@@ -4,6 +4,7 @@ module HashProxy
       @endpoint = endpoint
       @ctx = ZMQ::Context.new
       @socket = @ctx.socket(ZMQ::REQ)
+      at_exit { @socket.close; @ctx.close; }
       connect
     end
 

@@ -7,28 +7,98 @@ module HashProxy
       @ctx = ZMQ::Context.new
       @socket = @ctx.socket(ZMQ::REP)
       @nodes = {}
+      @filename = 'dump'
+      @file = File.open(@filename, 'a')
+      @buffer = []
+      @restructure_persistence_fork = Thread.new {}
+      at_exit { @socket.close; @ctx.close; }
     end
 
-    def new_fiber
+    def read_fiber
       Fiber.new do
-        until data = @socket.recv#(ZMQ::NOBLOCK)
-          Fiber.yield
-        end
-        until process(data)
-          Fiber.yield
+        while true
+          until data = @socket.recv(ZMQ::NOBLOCK)
+            Fiber.yield
+          end
+          until process(data)
+            Fiber.yield
+          end
         end
       end
+    end
+
+    def persistence_fiber
+      Fiber.new do |tick|
+        while true
+          if tick > 1 && @buffer.size >= 1 && not_restructuring?
+            @file.write @buffer.join("\n")
+            @file.puts
+            @file.fsync
+            @buffer.clear
+          end
+          tick = Fiber.yield
+        end
+      end
+    end
+
+    def persistence_restructure_fiber
+      Fiber.new do |tick|
+        while true
+          until tick > 5 && not_restructuring?
+            tick += Fiber.yield
+          end
+          @file.fsync
+          pid = fork { RestructurePersistence.new(@filename); exit! }
+          @restructure_persistence_fork = Process.detach(pid)
+          tick = 0
+        end
+      end
+    end
+
+    class TickManager
+      def initialize
+        @last_tick = Time.now
+        @subscribers = []
+      end
+
+      def register(fiber)
+        @subscribers << fiber
+      end
+
+      def fiber
+        @fiber ||= Fiber.new do
+          while true
+            if tick > 1
+              @subscribers.each {|f| f.resume(tick) if f.alive?}
+              @last_tick = Time.now
+            end
+            Fiber.yield
+          end
+        end
+      end
+
+      def tick
+        Time.now - @last_tick
+      end
+    end
+
+    def tick_manager
+      @tick_manager ||= TickManager.new
+    end
+
+    def not_restructuring?
+      @restructure_persistence_fork.stop?
     end
 
     def serve
       @socket.bind @endpoint
       puts "Server starting on #{@endpoint}"
-      fiber = new_fiber
+      tick_manager.register(persistence_fiber)
+      tick_manager.register(persistence_restructure_fiber)
+      fibers = [read_fiber, tick_manager.fiber]
       while true
-        if fiber.alive?
-          fiber.resume
-        else
-          fiber = new_fiber
+        fibers.each do |fiber|
+          fiber.resume if fiber.alive?
         end
       end
     end
@@ -45,12 +115,14 @@ module HashProxy
       when "LIST"
         aggregate_list
       when "SET"
+        @buffer << data
         client = ConsistentHashr.get(key)
         send("ACKSET", client.set(key, value))
       when "GET"
         client = ConsistentHashr.get(key)
         send("ACKGET", client.get(key))
       when "DELETE"
+        @buffer << data
         client = ConsistentHashr.get(key)
         send("ACKDELETE", client.delete(key))
       end
@@ -71,6 +143,3 @@ module HashProxy
 
   end
 end
-# always fork to refresh dump
-# if a pid is present, buffer things waiting to be dumped
-# refreshing of dump creates an array of instructions, per server

@@ -8,7 +8,8 @@ module HashProxy
       end
       @ctx = ZMQ::Context.new
       @socket = @ctx.socket(ZMQ::REP)
-      @store = {'hi' => 'there'}
+      at_exit { @socket.close; @ctx.close; }
+      @store = {}
     end
 
     def serve
@@ -38,7 +39,7 @@ module HashProxy
       client = @ctx.socket(ZMQ::REQ)
       client.connect(endpoint)
       send("NODE", URI.escape(@endpoint, ":"), client)
-      p client.recv
+      client.recv
       client.close
       serve
     end
