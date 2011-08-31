@@ -1,7 +1,6 @@
 require "hash_proxy/version"
 
 module HashProxy
-  require 'cool.io'
   require 'zmq'
   require 'consistent_hashr'
   require 'fiber'
