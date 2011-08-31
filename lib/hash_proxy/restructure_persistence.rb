@@ -3,6 +3,8 @@ module HashProxy
     def initialize(filename)
       @filename = filename
       @store = {}
+      read
+      write
     end
 
     def read
