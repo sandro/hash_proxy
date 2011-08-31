@@ -1,45 +1,55 @@
 module HashProxy
   class Client
-    def initialize(host, port)
-      @host = host
-      @port = port
-      setup_connection
+    def initialize(endpoint="tcp://127.0.0.1:6789")
+      @endpoint = endpoint
+      @ctx = ZMQ::Context.new
+      @socket = @ctx.socket(ZMQ::REQ)
+      connect
     end
 
-    def keys
-
+    def connect
+      @socket.connect(@endpoint)
     end
 
-    def setup_connection
-      client = ClientConnection.connect(@host, @port)
-      client.attach(event_loop)
-      puts "Echo client connecting to #{@host}:#{@port}..."
-      Cool.io::Loop.default.run
+    def list
+      @socket.send("LIST:")
+      l = process(@socket.recv)
+      l = l.split(",").map{|s| URI.unescape(s)}
+      p l
     end
 
-  end
-
-  class ClientConnection < Cool.io::TCPSocket
-
-    def on_connect
-      puts "#{remote_addr}:#{remote_port} connected"
+    def list_raw
+      @socket.send("LIST:")
+      process(@socket.recv)
     end
 
-    def on_close
-      puts "#{remote_addr}:#{remote_port} disconnected"
+    def get(key)
+      @socket.send("GET:#{key}")
+      p process(@socket.recv)
     end
 
-    def on_read(data)
-      print "got #{data}"
-      close
+    def set(key, value)
+      @socket.send("SET:#{key}:#{value}")
+      p process(@socket.recv)
     end
 
-    def on_resolve_failed
-      puts "DNS resolve failed"
+    def delete(key)
+      @socket.send("DELETE:#{key}")
+      p process(@socket.recv)
     end
 
-    def on_connect_failed
-      puts "connect failed, meaning our connection to their port was rejected"
+    def process(data)
+      instruction, value = data.split(":", 2)
+      case instruction
+      when "ACKLIST"
+        value
+      when "ACKSET"
+        value
+      when "ACKGET"
+        value unless value.empty?
+      when "ACKDELETE"
+        value unless value.empty?
+      end
     end
   end
 end

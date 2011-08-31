@@ -1,62 +1,60 @@
 module HashProxy
   class Node
-    def initialize(host, port)
-      @host = host
-      @port = port
+    def initialize(endpoint=nil)
+      if endpoint
+        @endpoint = endpoint
+      else
+        @endpoint = "tcp://127.0.0.1:#{next_available_port}"
+      end
+      @ctx = ZMQ::Context.new
+      @socket = @ctx.socket(ZMQ::REP)
+      @store = {'hi' => 'there'}
     end
 
-    def connect
-      event_loop = Cool.io::Loop.default
-      client = NodeConnection.connect(@host, @port)
-      client.attach(event_loop)
-      puts "Echo client connecting to #{@host}:#{@port}..."
-      event_loop.run
-    end
-  end
-
-  class NodeConnection < Cool.io::TCPSocket
-
-    def initialize(*args)
-      super
-      @store = {}
+    def serve
+      @socket.bind @endpoint
+      puts "Server starting on #{@endpoint}"
+      while data = @socket.recv
+        p data
+        process(data)
+      end
     end
 
-    def on_connect
-      puts "#{remote_addr}:#{remote_port} connected"
+    def process(data)
+      instruction, key, value = data.split(":", 3)
+      case instruction
+      when "LIST"
+        send("ACKLIST", @store.keys.map {|s| URI.escape(s.to_s, ',')}.join(","))
+      when "SET"
+        send("ACKSET", @store[key] = value)
+      when "GET"
+        send("ACKGET", @store[key])
+      when "DELETE"
+        send("ACKDELETE", @store.delete(key))
+      end
     end
 
-    def on_close
-      puts "#{remote_addr}:#{remote_port} disconnected"
-    end
-
-    def on_read(data)
-      print "got #{data}"
-    end
-
-    def on_resolve_failed
-      puts "DNS resolve failed"
-    end
-
-    def on_connect_failed
-      puts "connect failed, meaning our connection to their port was rejected"
+    def register(endpoint)
+      client = @ctx.socket(ZMQ::REQ)
+      client.connect(endpoint)
+      send("NODE", URI.escape(@endpoint, ":"), client)
+      p client.recv
+      client.close
+      serve
     end
 
     private
 
-    def set(key, value)
-      @store[key] = value
+    def next_available_port
+      server = TCPServer.new('127.0.0.1', 0)
+      @port = server.addr[1]
+    ensure
+      server.close if server
     end
 
-    def get(key)
-      @store[key]
+    def send(key, value, socket=@socket)
+      socket.send("#{key.to_s.upcase}:#{value}")
     end
 
-    def keys
-      @store.keys
-    end
-
-    def delete(key)
-      @store.delete(key)
-    end
   end
 end

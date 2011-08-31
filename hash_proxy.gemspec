@@ -21,5 +21,6 @@ Gem::Specification.new do |s|
   # specify any dependencies here; for example:
   s.add_runtime_dependency "cool.io"
   s.add_runtime_dependency "zmq"
+  s.add_runtime_dependency "consistent_hashr"
   s.add_development_dependency "ruby-debug19"
 end
