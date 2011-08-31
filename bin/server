@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+require 'hash_proxy'
+
+host = ENV['HOST'] || '127.0.0.1'
+port = ENV['PORT'] || '6789'
+HashProxy::Server.new(host, port).serve
