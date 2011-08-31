@@ -55,33 +55,6 @@ module HashProxy
       end
     end
 
-    class TickManager
-      def initialize
-        @last_tick = Time.now
-        @subscribers = []
-      end
-
-      def register(fiber)
-        @subscribers << fiber
-      end
-
-      def fiber
-        @fiber ||= Fiber.new do
-          while true
-            if tick > 1
-              @subscribers.each {|f| f.resume(tick) if f.alive?}
-              @last_tick = Time.now
-            end
-            Fiber.yield
-          end
-        end
-      end
-
-      def tick
-        Time.now - @last_tick
-      end
-    end
-
     def tick_manager
       @tick_manager ||= TickManager.new
     end
@@ -142,4 +115,33 @@ module HashProxy
     end
 
   end
+
+
+  class TickManager
+    def initialize
+      @last_tick = Time.now
+      @subscribers = []
+    end
+
+    def register(fiber)
+      @subscribers << fiber
+    end
+
+    def fiber
+      @fiber ||= Fiber.new do
+        while true
+          if tick > 1
+            @subscribers.each {|f| f.resume(tick) if f.alive?}
+            @last_tick = Time.now
+          end
+          Fiber.yield
+        end
+      end
+    end
+
+    def tick
+      Time.now - @last_tick
+    end
+  end
+
 end
