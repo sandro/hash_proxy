@@ -111,7 +111,7 @@ module HashProxy
       when "LIST"
         aggregate_list
       when "SET"
-        @buffer << data
+        @buffer << data unless noreply
         client = ConsistentHashr.get(key)
         value = client.set(key, value)
         send("ACKSET", value) unless noreply
