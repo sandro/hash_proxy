@@ -1,9 +1,7 @@
 module HashProxy
   class Server
-    def initialize(host, port)
-      @host = host
-      @port = port
-      @endpoint = "tcp://#{@host}:#{@port}"
+    def initialize(endpoint)
+      @endpoint = endpoint
       @ctx = ZMQ::Context.new
       @socket = @ctx.socket(ZMQ::REP)
       @nodes = {}
