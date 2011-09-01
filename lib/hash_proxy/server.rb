@@ -103,6 +103,11 @@ module HashProxy
         @nodes[key] = Client.new(key)
         ConsistentHashr.add_server(key, @nodes[key])
         send("ACK")
+      when "NODEGONE"
+        key = URI.unescape(key)
+        @nodes.delete(key)
+        ConsistentHashr.remove_server(key)
+        send("ACK")
       when "LIST"
         aggregate_list
       when "SET"

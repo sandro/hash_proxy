@@ -39,7 +39,11 @@ module HashProxy
       client.connect(endpoint)
       send("NODE", URI.escape(@endpoint, ":"), client)
       client.recv
-      client.close
+      at_exit do
+        send("NODEGONE", URI.escape(@endpoint, ":"), client)
+        client.recv
+        client.close
+      end
       serve
     end
 
