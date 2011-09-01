@@ -14,9 +14,8 @@ module HashProxy
 
     def serve
       @socket.bind @endpoint
-      puts "Server starting on #{@endpoint}"
+      puts "Node starting on #{@endpoint}"
       while data = @socket.recv
-        p data
         process(data)
       end
     end
@@ -54,7 +53,7 @@ module HashProxy
     end
 
     def send(key, value, socket=@socket)
-      socket.send("#{key.to_s.upcase}:#{value}")
+      socket.send("#{key.to_s.upcase}:#{value}", ZMQ::NOBLOCK)
     end
 
   end

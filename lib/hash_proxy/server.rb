@@ -30,7 +30,7 @@ module HashProxy
     def persistence_fiber
       Fiber.new do |tick|
         while true
-          if tick > 1 && @buffer.size >= 1 && not_restructuring?
+          if tick > 1 && @buffer.size >= 1000 && not_restructuring?
             @file.write @buffer.join("\n")
             @file.puts
             @file.fsync
@@ -47,6 +47,7 @@ module HashProxy
           until tick > 60 && not_restructuring?
             tick += Fiber.yield
           end
+          puts "Restructuring '#{@filename}' for greater efficiency."
           @file.fsync
           pid = fork { RestructurePersistence.new(@filename); exit! }
           @restructure_persistence_fork = Process.detach(pid)
@@ -68,7 +69,7 @@ module HashProxy
         while @nodes.empty?
           Fiber.yield
         end
-        puts "Recovering!"
+        puts "Attempting to recover from '#{@filename}'."
         File.open(@filename) do |f|
           f.each do |data|
             process(data.strip, true)
@@ -96,7 +97,6 @@ module HashProxy
 
     def process(data, noreply=false)
       instruction, key, value = data.split(":", 3)
-      p data
       case instruction
       when "NODE"
         key = URI.unescape(key)
@@ -130,7 +130,7 @@ module HashProxy
     private
 
     def send(key, value=nil, socket=@socket)
-      socket.send("#{key.to_s.upcase}:#{value}")
+      socket.send("#{key.to_s.upcase}:#{value}", ZMQ::NOBLOCK)
     end
 
   end
