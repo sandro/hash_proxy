@@ -8,7 +8,7 @@ module HashProxy
 
   autoload 'Client', 'hash_proxy/client'
   autoload 'Node', 'hash_proxy/node'
-  autoload 'Server', 'hash_proxy/server'
+  autoload 'Proxy', 'hash_proxy/proxy'
   autoload 'RestructurePersistence', 'hash_proxy/restructure_persistence'
 
   module ServerRemover

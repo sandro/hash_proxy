@@ -1,5 +1,5 @@
 module HashProxy
-  class Server
+  class Proxy
     def initialize(endpoint)
       @endpoint = endpoint
       @ctx = ZMQ::Context.new

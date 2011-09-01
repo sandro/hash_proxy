@@ -2,4 +2,4 @@
 require 'hash_proxy'
 
 endpoint = ARGV[0] && !ARGV[0].empty? ? ARGV[0] : "tcp://127.0.0.1:6789"
-HashProxy::Server.new(endpoint).serve
+HashProxy::Proxy.new(endpoint).serve
