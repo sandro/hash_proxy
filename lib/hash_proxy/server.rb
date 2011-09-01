@@ -63,22 +63,40 @@ module HashProxy
       @restructure_persistence_fork.stop?
     end
 
+    def recover_fiber
+      Fiber.new do
+        while @nodes.empty?
+          Fiber.yield
+        end
+        puts "Recovering!"
+        File.open(@filename) do |f|
+          f.each do |data|
+            process(data.strip, true)
+          end
+        end
+      end
+    end
+
     def serve
       @socket.bind @endpoint
       puts "Server starting on #{@endpoint}"
       tick_manager.register(persistence_fiber)
       tick_manager.register(persistence_restructure_fiber)
-      fibers = [read_fiber, tick_manager.fiber]
+      fibers = [read_fiber, recover_fiber, tick_manager.fiber]
       while true
         fibers.each do |fiber|
-          fiber.resume if fiber.alive?
+          if fiber.alive?
+            fiber.resume
+          else
+            fibers.delete(fiber)
+          end
         end
       end
     end
 
-    def process(data)
+    def process(data, noreply=false)
       instruction, key, value = data.split(":", 3)
-      p instruction
+      p data
       case instruction
       when "NODE"
         key = URI.unescape(key)
@@ -90,7 +108,8 @@ module HashProxy
       when "SET"
         @buffer << data
         client = ConsistentHashr.get(key)
-        send("ACKSET", client.set(key, value))
+        value = client.set(key, value)
+        send("ACKSET", value) unless noreply
       when "GET"
         client = ConsistentHashr.get(key)
         send("ACKGET", client.get(key))
