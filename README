@@ -46,7 +46,7 @@ storage-engines.
 
 8. Because zmq is the transport protocol, nodes can be written in any language (with a zmq driver). Check out node.py as an example.
 
-9. Don't need the persistence or distribution? Connect directly to a node. A small benchmark shows it to be twice as fast
+9. Don't need the persistence or distribution? Connect directly to a node. A small benchmark shows it to be twice as fast.
 
     $ bundle exec bin/node serve
     $ bundle console
