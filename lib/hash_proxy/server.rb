@@ -17,26 +17,25 @@ module HashProxy
     def read_fiber
       Fiber.new do
         while true
-          until data = @socket.recv
-            Fiber.yield
+          if ZMQ.select([@socket], [], [], 0.5)
+            data = @socket.recv
+            process(data)
           end
-          until process(data)
-            Fiber.yield
-          end
+          Fiber.yield
         end
       end
     end
 
     def persistence_fiber
-      Fiber.new do |tick|
+      Fiber.new do
         while true
-          if tick > 1 && @buffer.size >= 1000 && not_restructuring?
+          if @buffer.size >= 1000 && not_restructuring?
             @file.write @buffer.join("\n")
             @file.puts
             @file.fsync
             @buffer.clear
           end
-          tick = Fiber.yield
+          Fiber.yield
         end
       end
     end
