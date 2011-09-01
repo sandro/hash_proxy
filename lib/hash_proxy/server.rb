@@ -17,7 +17,7 @@ module HashProxy
     def read_fiber
       Fiber.new do
         while true
-          until data = @socket.recv(ZMQ::NOBLOCK)
+          until data = @socket.recv
             Fiber.yield
           end
           until process(data)
