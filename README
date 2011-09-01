@@ -44,4 +44,12 @@ storage-engines.
 
 7. Restarting the server when the dump is present will redistribute the keys to all of the nodes present.
 
-8. Because zmq is the transport protocol, nodes can be written in any language (with a zmq driver).
+8. Because zmq is the transport protocol, nodes can be written in any language (with a zmq driver). Check out node.py as an example.
+
+9. Don't need the persistence or distribution? Connect directly to a node. A small benchmark shows it to be twice as fast
+
+    $ bundle exec bin/node serve
+    $ bundle console
+    >> c = HashProxy::Client.new
+    >> c.set('foo', 'bar')
+    >> c.get('foo')
