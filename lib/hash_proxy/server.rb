@@ -83,7 +83,7 @@ module HashProxy
       puts "Server starting on #{@endpoint}"
       tick_manager.register(persistence_fiber)
       tick_manager.register(persistence_restructure_fiber)
-      fibers = [read_fiber, recover_fiber, tick_manager.fiber]
+      fibers = [read_fiber, recover_fiber, tick_manager]
       while true
         fibers.each do |fiber|
           if fiber.alive?
@@ -140,7 +140,6 @@ module HashProxy
 
   end
 
-
   class TickManager
     def initialize
       @last_tick = Time.now
@@ -161,6 +160,14 @@ module HashProxy
           Fiber.yield
         end
       end
+    end
+
+    def alive?
+      fiber.alive?
+    end
+
+    def resume
+      fiber.resume
     end
 
     def tick
