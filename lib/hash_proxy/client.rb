@@ -41,14 +41,12 @@ module HashProxy
     def process(data)
       instruction, value = data.split(":", 2)
       case instruction
-      when "ACKLIST"
+      when "ACKLIST", "ACKSET"
         value
-      when "ACKSET"
-        value
-      when "ACKGET"
+      when "ACKGET", "ACKDELETE"
         value unless value.empty?
-      when "ACKDELETE"
-        value unless value.empty?
+      else
+        raise "Unknown response: #{data}"
       end
     end
   end
