@@ -1,3 +1,0 @@
-export RUBYLIB=`pwd`/lib
-export RUBYOPT=rubygems
-export PATH=`pwd`/bin:$PATH
