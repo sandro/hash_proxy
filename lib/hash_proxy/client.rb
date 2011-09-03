@@ -17,6 +17,7 @@ module HashProxy
       l = process(@socket.recv)
       l = l.split(",").map{|s| URI.unescape(s)}
     end
+    alias keys list
 
     def list_raw
       @socket.send("LIST:", ZMQ::NOBLOCK)
@@ -27,11 +28,13 @@ module HashProxy
       @socket.send("GET:#{key}", ZMQ::NOBLOCK)
       process(@socket.recv)
     end
+    alias [] get
 
     def set(key, value)
       @socket.send("SET:#{key}:#{value}", ZMQ::NOBLOCK)
       process(@socket.recv)
     end
+    alias []= set
 
     def delete(key)
       @socket.send("DELETE:#{key}", ZMQ::NOBLOCK)
