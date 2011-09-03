@@ -6,6 +6,7 @@ storage-engines.
 
 Requirements
 ------------
+* Ruby 1.9.2 (Fibers)
 * ZeroMQ
 * ConsistentHashr gem
 
