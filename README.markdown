@@ -45,12 +45,15 @@ $ bundle console
 4. Start a new node
 
     `bundle exec bin/hash-proxy-node`
-    close the old one with CTRl-C
-    check `c.list`, the array will be empty
+
+    Close the first node with CTRl-C, then
+    check `c.list`; the array will be empty
 
 5. Check the dump (persistence)
 
-    The 'dump' log is written out every second if 1000 entries have been made.
+    The 'dump' log is written out every second if 1000 entries have been
+    made.
+
     `$ cat dump`
 
 6. The log gets restructured (truncated) every 15 seconds, leaving only the relevant changes.
