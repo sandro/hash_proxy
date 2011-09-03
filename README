@@ -4,6 +4,14 @@ HashProxy
 A distributed, persistent, key/value store providing language-agnostic
 storage-engines.
 
+Requirements
+------------
+* ZeroMQ
+* ConsistentHashr gem
+
+Example
+-------
+
 1. Start a node to store data
 
     bundle exec bin/hash-proxy-node
