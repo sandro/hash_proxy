@@ -57,11 +57,11 @@ $ bundle console
 
     `$ cat dump`
 
-6. The log gets restructured (truncated) every 15 seconds, leaving only the relevant changes.
+6. The log gets restructured (truncated) every 60 seconds, leaving only the relevant changes.
 
-7. Restarting the server when the log is present will redistribute the key-value pairs to all of the nodes present.
+7. Restarting the server when the log is present will redistribute the key-value pairs to all of the nodes present. It's always recommended to start the nodes before starting the proxy server. The server reditributes the keys almost immediately, and if a node is missing, the key will be stored on the next available node. When the original node returns, the server will search for the key there on the original node, and won't find the value.
 
-8. Because zmq is the transport protocol, nodes can be written in any language (with a zmq driver). Check out node.py as an example (python node.py).
+8. Because zmq is the transport protocol, nodes can be written in any language (with a zmq driver). Check out node.py as an example (`python node.py`).
 
 9. Don't need the persistence or distribution? Connect directly to a node. A small benchmark shows it to be twice as fast.
 
