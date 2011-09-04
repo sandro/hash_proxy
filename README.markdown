@@ -72,3 +72,8 @@ $ bundle console
 >> c.set('foo', 'bar')
 >> c.get('foo')
 ```
+
+Thoughts
+--------
+Having the nodes, and client all connect to a single process makes distribution very simple. Nodes can be added and removed at will without making changes to the client. The proxy server is the only IP/port that needs to be configured. While configuration is dead-simple, the proxy represents a single point of failure in our system. I've made no provisions for dealing with this problem, though it is solvable.
+I'm curious to know where the major speed bottle-neck is. Early on, I imagined the cache store (node) would be the bottle-neck, which is why I designed them to be language agnostic. I'd love to see a Ruby node compared to a C node. Though, when I connect directly to a node, skipping the proxy, it's clear that the proxy itself creates some latency, which is disappointing.
