@@ -4,6 +4,8 @@ HashProxy
 A distributed, persistent, key/value store providing language-agnostic
 storage-engines.
 
+This was my entry for the [key/value store codebrawl](http://codebrawl.com/contests/key-value-stores) where I scored 3rd place!
+
 Requirements
 ------------
 * Ruby 1.9.2 (Fibers)
